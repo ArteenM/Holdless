@@ -1,0 +1,31 @@
+provider,parent,service,plan_name,tier,download_mbps,data_gb,price,promo_months,regular_price,province,source_url,observed_at
+rogers,rogers,internet,Rogers Ignite Internet 1 Gbps,gig,1000,,95,,115,BC,https://www.rogers.com/internet,2026-09-20
+shaw,rogers,internet,Shaw Fibre+ Gig,gig,1000,,85,12,115,BC,https://www.shaw.ca/internet,2026-09-20
+telus,telus,internet,TELUS PureFibre Gigabit,gig,940,,55,24,110,BC,https://www.telus.com/en/internet,2026-09-20
+freedom,quebecor,internet,Freedom Home Internet 1 Gbps,gig,1000,,50,,50,BC,https://www.freedommobile.ca/en-CA/home-internet,2026-09-20
+novus,novus,internet,Novus 1 Gbps,gig,1000,,65,12,85,BC,https://www.novusnow.ca/internet,2026-09-20
+teksavvy,teksavvy,internet,TekSavvy Cable 1 Gbps,gig,1000,,75,,75,BC,https://www.teksavvy.com/internet,2026-09-20
+rogers,rogers,internet,Rogers Ignite Internet 500u,mid,500,,85,,105,BC,https://www.rogers.com/internet,2026-09-20
+telus,telus,internet,TELUS PureFibre 500,mid,500,,50,24,95,BC,https://www.telus.com/en/internet,2026-09-20
+freedom,quebecor,internet,Freedom Home Internet 500,mid,500,,45,,45,BC,https://www.freedommobile.ca/en-CA/home-internet,2026-09-20
+rogers,rogers,internet,Rogers Ignite Internet 1 Gbps,gig,1000,,95,,115,ON,https://www.rogers.com/internet,2026-09-20
+bell,bell,internet,Bell Gigabit Fibe 1.0,gig,1000,,80,12,110,ON,https://www.bell.ca/Bell_Internet,2026-09-20
+virgin,bell,internet,Virgin Plus Gigabit,gig,1000,,70,,70,ON,https://www.virginplus.ca/en/internet,2026-09-20
+freedom,quebecor,internet,Freedom Home Internet 1 Gbps,gig,1000,,55,,55,ON,https://www.freedommobile.ca/en-CA/home-internet,2026-09-20
+teksavvy,teksavvy,internet,TekSavvy Fibre 1 Gbps,gig,1000,,70,,70,ON,https://www.teksavvy.com/internet,2026-09-20
+bell,bell,mobile,Bell Essential 100 GB,large,,100,95,,95,ON,https://www.bell.ca/Mobility,2026-09-20
+virgin,bell,mobile,Virgin Plus 100 GB,large,,100,75,,75,ON,https://www.virginplus.ca/en/plans,2026-09-20
+rogers,rogers,mobile,Rogers Essentials 100 GB,large,,100,95,,95,ON,https://www.rogers.com/plans,2026-09-20
+fido,rogers,mobile,Fido 100 GB,large,,100,60,,60,ON,https://www.fido.ca/phones/plans,2026-09-20
+telus,telus,mobile,TELUS 100 GB,large,,100,95,,95,ON,https://www.telus.com/en/mobility/plans,2026-09-20
+koodo,telus,mobile,Koodo 100 GB,large,,100,60,,60,ON,https://www.koodomobile.com/rate-plans,2026-09-20
+freedom,quebecor,mobile,Freedom 100 GB 5G+,large,,100,50,,50,ON,https://www.freedommobile.ca/en-CA/plans,2026-09-20
+public,telus,mobile,Public Mobile 100 GB,large,,100,45,,45,ON,https://www.publicmobile.ca/en/plans,2026-09-20
+telus,telus,mobile,TELUS 100 GB,large,,100,85,,85,BC,https://www.telus.com/en/mobility/plans,2026-09-20
+koodo,telus,mobile,Koodo 100 GB,large,,100,55,,55,BC,https://www.koodomobile.com/rate-plans,2026-09-20
+public,telus,mobile,Public Mobile 100 GB,large,,100,45,,45,BC,https://www.publicmobile.ca/en/plans,2026-09-20
+rogers,rogers,mobile,Rogers Essentials 100 GB,large,,100,85,,85,BC,https://www.rogers.com/plans,2026-09-20
+fido,rogers,mobile,Fido 100 GB,large,,100,55,,55,BC,https://www.fido.ca/phones/plans,2026-09-20
+bell,bell,mobile,Bell Essential 100 GB,large,,100,85,,85,BC,https://www.bell.ca/Mobility,2026-09-20
+virgin,bell,mobile,Virgin Plus 100 GB,large,,100,65,,65,BC,https://www.virginplus.ca/en/plans,2026-09-20
+freedom,quebecor,mobile,Freedom 100 GB 5G+,large,,100,45,,45,BC,https://www.freedommobile.ca/en-CA/plans,2026-09-20
