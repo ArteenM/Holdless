@@ -15,7 +15,7 @@ Three queries, SQL only. Mehdi wires them into the backend.
 
 Changes to Tony's CSVs in `clean/`:
 - `DATA_GB = unlimited` became `999`.
-- Freedom internet promo prices (24/24/44 with no promo months) were removed until Tony confirms them.
+- Freedom 5G Home Internet (3 rows) was left out: it's invite-only, so its prices can't be checked.
 
 The call history in Tiger is demo data. Say so in the pitch.
 Connection details go to Mehdi by private DM, never in this repo.

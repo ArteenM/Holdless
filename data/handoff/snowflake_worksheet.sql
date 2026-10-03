@@ -47,7 +47,7 @@ CREATE OR REPLACE TABLE DEAL_INTEL (
 -- ---------------------------------------------------------------------
 -- 2. LOAD (Snowsight UI, not SQL)
 -- Use the cleaned files in data/handoff/clean/ (Tony's data with 'unlimited' → 999
--- and the Freedom internet promo prices removed until Tony confirms them).
+-- and Freedom 5G Home Internet left out: invite-only, prices can't be checked).
 --   Data → Add Data → Load data into a Table → HOLDLESS → CORE → PLAN_PRICES → plan_prices.csv
 --   File format: header lines to skip = 1, field delimiter = comma, field optionally enclosed by "
 --   Repeat for DEAL_INTEL with deal_intel.csv
@@ -57,7 +57,7 @@ CREATE OR REPLACE TABLE DEAL_INTEL (
 -- ---------------------------------------------------------------------
 -- 3. CHECK THE LOAD
 -- ---------------------------------------------------------------------
-SELECT COUNT(*) FROM PLAN_PRICES;   -- expect 55
+SELECT COUNT(*) FROM PLAN_PRICES;   -- expect 52
 SELECT COUNT(*) FROM DEAL_INTEL;    -- expect 19
 
 -- Every plan should have a size; any rows here mean a column shifted.

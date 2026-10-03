@@ -1,7 +1,4 @@
 PROVIDER,PLAN_TYPE,PLAN_NAME,SPEED_MBPS,DATA_GB,MONTHLY_PRICE,PROMO_PRICE,PROMO_MONTHS,REGION,SOURCE_URL,CHECKED_AT
-Freedom,internet,5G Home Internet 200GB,100,,60,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
-Freedom,internet,5G Home Internet 600GB,100,,80,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
-Freedom,internet,5G Home Internet 1000GB,100,,100,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
 Novus,internet,Internet 100,100,,50,,,BC,https://www.novusnow.ca/internet,2026-10-03
 Novus,internet,Internet 1000,1000,,55,,,BC,https://www.novusnow.ca/internet,2026-10-03
 Novus,internet,Internet 2500,2500,,65,,,BC,https://www.novusnow.ca/internet,2026-10-03
