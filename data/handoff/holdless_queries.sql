@@ -7,22 +7,22 @@
 
 -- ---------------------------------------------------------------------
 -- QUERY 1 · "You're overpaying $X"  (Snowflake)
--- Compares the user's price with similar plans (±25% speed or data) from OTHER providers.
+-- Compares the user's price with similar plans (half to double the speed or data) from OTHER providers.
 -- ---------------------------------------------------------------------
 SELECT
   MEDIAN(COALESCE(PROMO_PRICE, MONTHLY_PRICE))                     AS TYPICAL_PRICE,
   MIN(COALESCE(PROMO_PRICE, MONTHLY_PRICE))                        AS CHEAPEST_PRICE,
   MIN_BY(PROVIDER,  COALESCE(PROMO_PRICE, MONTHLY_PRICE))          AS CHEAPEST_PROVIDER,
   MIN_BY(PLAN_NAME, COALESCE(PROMO_PRICE, MONTHLY_PRICE))          AS CHEAPEST_PLAN,
-  ROUND(96 - MEDIAN(COALESCE(PROMO_PRICE, MONTHLY_PRICE)), 2)      AS OVERPAY_MONTHLY,  -- INPUT: user's monthly price (96)
+  ROUND(130 - MEDIAN(COALESCE(PROMO_PRICE, MONTHLY_PRICE)), 2)      AS OVERPAY_MONTHLY,  -- INPUT: user's monthly price
   COUNT(*)                                                         AS PLANS_COMPARED
 FROM PLAN_PRICES
 WHERE PLAN_TYPE = 'internet'                                                 -- INPUT: plan type ('internet' | 'mobile')
   AND IFF(PLAN_TYPE = 'internet', SPEED_MBPS, DATA_GB)
-      BETWEEN 500 * 0.75 AND 500 * 1.25                                      -- INPUT: size, both 500s (Mbps for internet, GB for mobile)
+      BETWEEN 500 * 0.5 AND 500 * 2                                          -- INPUT: size, both 500s (Mbps, or GB; 999 = unlimited)
   AND UPPER(PROVIDER) <> UPPER('Rogers');                                    -- INPUT: user's provider
 
--- Mobile test: PLAN_TYPE = 'mobile', size 50 (GB), price e.g. 85.
+-- Mobile check: PLAN_TYPE = 'mobile', size 100, price 80, provider 'Telus'.
 
 
 -- ---------------------------------------------------------------------
@@ -53,5 +53,5 @@ FROM DEAL_INTEL
 WHERE UPPER(COMPANY) = UPPER('Rogers')                                     -- INPUT: company
   AND RESULT IN ('won', 'partial')
 GROUP BY ARGUMENT_USED
-ORDER BY AVG_DISCOUNT DESC
+ORDER BY TIMES_WORKED DESC, AVG_DISCOUNT DESC NULLS LAST, ARGUMENT_USED
 LIMIT 3;
