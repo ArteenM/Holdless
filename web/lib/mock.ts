@@ -18,9 +18,14 @@ export type Scan = {
   overpayMo: number;
   detail: string;
   bestTime: string;
+  // false when the data service says the bill isn't worth a call (fair price, no data)
+  worthCalling?: boolean;
+  // "fallback" when the data service couldn't be reached and these are the sample values
+  source?: "api" | "fallback";
 };
 
-// Shaped like the data service's POST /bills/scan response.
+// Fallback when the data service is unreachable: a cached copy of what its
+// POST /bills/scan returns for each sample bill (seed data, offline mode).
 export const SAMPLE_SCANS: Record<string, Scan> = {
   rogers_internet: {
     company: "Rogers",
@@ -30,27 +35,27 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
     headline: "You're overpaying",
     overpayMo: 41,
     detail: "People in Surrey pay $55 for the same internet plan. You pay $96.",
-    bestTime: "Best time to call: now · avg hold 4 min",
+    bestTime: "Best time to call: Tue 9 am · avg hold 5 min",
   },
   bell_mobile: {
     company: "Bell",
     service: "Mobile",
     province: "ON",
-    startPrice: 85,
+    startPrice: 95,
     headline: "You're overpaying",
-    overpayMo: 28,
-    detail: "People in Ontario pay $57 for the same 100 GB plan. You pay $85.",
-    bestTime: "Best time to call: Tue 9 am · avg hold 6 min",
+    overpayMo: 30,
+    detail: "People in Toronto pay $65 for the same phone plan. You pay $95.",
+    bestTime: "Best time to call: Tue 10 am · avg hold 6 min",
   },
   telus_mobile: {
-    company: "Telus",
+    company: "TELUS",
     service: "Mobile",
-    province: "AB",
-    startPrice: 79,
+    province: "BC",
+    startPrice: 85,
     headline: "You're overpaying",
-    overpayMo: 19,
-    detail: "People in Alberta pay $60 for the same 50 GB plan. You pay $79.",
-    bestTime: "Best time to call: now · avg hold 3 min",
+    overpayMo: 25,
+    detail: "People in Burnaby pay $60 for the same phone plan. You pay $85.",
+    bestTime: "Best time to call: Wed 9 am · avg hold 4 min",
   },
 };
 

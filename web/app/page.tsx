@@ -13,15 +13,33 @@ export default function Home() {
   const [vibe, setVibe] = useState<Vibe>("relentless");
   const [dialing, setDialing] = useState(false);
 
-  // Mock scan: a short delay, then a canned result.
-  function startScan(sampleId: string, name: string) {
+  const scanSeq = useRef(0);
+
+  // Reads the bill through /api/scan (data service). The route already falls
+  // back to sample values; this catch only covers our own server being down.
+  async function startScan(input: { sample: string } | { file: File }, name: string) {
+    const seq = ++scanSeq.current;
     setFileName(name);
     setScan(null);
     setScanning(true);
-    setTimeout(() => {
-      setScan(SAMPLE_SCANS[sampleId]);
-      setScanning(false);
-    }, 900);
+
+    const body = new FormData();
+    if ("sample" in input) body.set("sample", input.sample);
+    else body.set("file", input.file);
+
+    let result: Scan;
+    try {
+      const res = await fetch("/api/scan", { method: "POST", body, signal: AbortSignal.timeout(30000) });
+      if (!res.ok) throw new Error(`/api/scan → ${res.status}`);
+      result = await res.json();
+    } catch {
+      const id = "sample" in input ? input.sample : "rogers_internet";
+      result = { ...SAMPLE_SCANS[id], source: "fallback" };
+    }
+
+    if (seq !== scanSeq.current) return; // a newer scan started meanwhile
+    setScan(result);
+    setScanning(false);
   }
 
   async function callForMe() {
@@ -44,8 +62,11 @@ export default function Home() {
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) startScan("rogers_internet", file.name);
+    if (file) startScan({ file }, file.name);
+    e.target.value = ""; // picking the same file again should rescan
   }
+
+  const canCall = scan !== null && scan.worthCalling !== false;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-6 pb-32">
@@ -81,7 +102,7 @@ export default function Home() {
             <button
               key={b.id}
               type="button"
-              onClick={() => startScan(b.id, `${b.label} (sample)`)}
+              onClick={() => startScan({ sample: b.id }, `${b.label} (sample)`)}
               className="min-h-11 rounded-full border border-line px-4 font-mono text-sm transition hover:border-lime active:scale-95"
             >
               {b.label}
@@ -102,15 +123,22 @@ export default function Home() {
               {scan.company} · {scan.service}
             </p>
             <p className="mt-3 text-2xl font-bold">{scan.headline}</p>
-            <p className="text-7xl font-extrabold leading-none tracking-tight text-lime">
-              ${scan.overpayMo}
-              <span className="text-3xl">/mo</span>
-            </p>
+            {scan.overpayMo > 0 && (
+              <p className="text-7xl font-extrabold leading-none tracking-tight text-lime">
+                ${scan.overpayMo}
+                <span className="text-3xl">/mo</span>
+              </p>
+            )}
             <p className="mt-4 leading-snug">{scan.detail}</p>
-            <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-3 py-1.5 font-mono text-xs">
-              <span className="size-2 rounded-full bg-lime" />
-              {scan.bestTime}
-            </p>
+            {scan.bestTime && (
+              <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-3 py-1.5 font-mono text-xs">
+                <span className="size-2 rounded-full bg-lime" />
+                {scan.bestTime}
+              </p>
+            )}
+            {scan.source === "fallback" && (
+              <p className="mt-4 font-mono text-xs text-muted">Sample numbers · couldn&apos;t reach live prices</p>
+            )}
           </section>
 
           {/* 3. Vibe */}
@@ -143,11 +171,11 @@ export default function Home() {
       <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink to-transparent px-4 pt-8 pb-6">
         <button
           type="button"
-          disabled={!scan || dialing}
+          disabled={!canCall || dialing}
           onClick={callForMe}
           className="mx-auto block min-h-16 w-full max-w-md rounded-full bg-lime text-xl font-extrabold text-ink transition active:scale-[0.98] disabled:opacity-30"
         >
-          {dialing ? "Dialing…" : "Call for me"}
+          {dialing ? "Dialing…" : scan && !canCall ? "Nothing to win here" : "Call for me"}
         </button>
       </div>
     </main>
