@@ -1,4 +1,4 @@
-// Mock data for the three screens. Swap for Arteen's API + /api/calls later.
+// Mock data: sample bills for the home screen, and the demo call's transcript.
 
 export type Vibe = "polite" | "relentless" | "lawyer" | "grandma";
 
@@ -12,6 +12,8 @@ export const VIBES: { id: Vibe; label: string; blurb: string }[] = [
 export type Scan = {
   company: string;
   service: string;
+  province: string;
+  startPrice: number;
   headline: string;
   overpayMo: number;
   detail: string;
@@ -23,6 +25,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
   rogers_internet: {
     company: "Rogers",
     service: "Internet",
+    province: "BC",
+    startPrice: 96,
     headline: "You're overpaying",
     overpayMo: 41,
     detail: "People in Surrey pay $55 for the same internet plan. You pay $96.",
@@ -31,6 +35,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
   bell_mobile: {
     company: "Bell",
     service: "Mobile",
+    province: "ON",
+    startPrice: 85,
     headline: "You're overpaying",
     overpayMo: 28,
     detail: "People in Ontario pay $57 for the same 100 GB plan. You pay $85.",
@@ -39,6 +45,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
   telus_mobile: {
     company: "Telus",
     service: "Mobile",
+    province: "AB",
+    startPrice: 79,
     headline: "You're overpaying",
     overpayMo: 19,
     detail: "People in Alberta pay $60 for the same 50 GB plan. You pay $79.",
@@ -72,17 +80,3 @@ export const TRANSCRIPT: Line[] = [
   { speaker: "agent", text: "Perfect. Thanks Dana, have a great day." },
   { speaker: "system", text: "Call ended · 14 min 32 s" },
 ];
-
-export const WIN = {
-  company: "Rogers",
-  savedTotal: 300,
-  savedMo: 25,
-  months: 12,
-  repId: "R4471",
-  confirmation: "CNF-882913",
-  transcriptSha256: "9f2c1a7e4b0d83e65c1f7a29d4e0b6c38a1f5e27d90c4b6a13e8f72c5d0a9b41",
-  promisesSha256: "3b7e90d14c2a8f65e1d07b93a4c5f28e6d1b0a79c3e4f852b6a0d17e9c2f4a83",
-  signature: "5VfYhxqQ8kE7mZr3TnW2cJpL9sBdG4aUeX6yHo1RkN8vMtFqP2wZ7jCnA3bD5gSxLuE9rKhT1yVmQ6oWpJ4fBc",
-};
-
-export const explorerTx = (sig: string) => `https://explorer.solana.com/tx/${sig}?cluster=devnet`;

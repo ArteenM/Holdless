@@ -11,6 +11,7 @@ export default function Home() {
   const [scanning, setScanning] = useState(false);
   const [scan, setScan] = useState<Scan | null>(null);
   const [vibe, setVibe] = useState<Vibe>("relentless");
+  const [dialing, setDialing] = useState(false);
 
   // Mock scan: a short delay, then a canned result.
   function startScan(sampleId: string, name: string) {
@@ -21,6 +22,24 @@ export default function Home() {
       setScan(SAMPLE_SCANS[sampleId]);
       setScanning(false);
     }, 900);
+  }
+
+  async function callForMe() {
+    if (!scan) return;
+    setDialing(true);
+    let id = `demo-${Date.now()}`;
+    try {
+      const res = await fetch("/api/calls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...scan, vibe }),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (res.ok) id = (await res.json()).id;
+    } catch {
+      // fall back to the demo call
+    }
+    router.push(`/call/${id}?vibe=${vibe}`);
   }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -124,11 +143,11 @@ export default function Home() {
       <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink to-transparent px-4 pt-8 pb-6">
         <button
           type="button"
-          disabled={!scan}
-          onClick={() => router.push(`/call/demo?vibe=${vibe}`)}
+          disabled={!scan || dialing}
+          onClick={callForMe}
           className="mx-auto block min-h-16 w-full max-w-md rounded-full bg-lime text-xl font-extrabold text-ink transition active:scale-[0.98] disabled:opacity-30"
         >
-          Call for me
+          {dialing ? "Dialing…" : "Call for me"}
         </button>
       </div>
     </main>

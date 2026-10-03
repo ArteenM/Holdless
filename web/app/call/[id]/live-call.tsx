@@ -2,27 +2,64 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { TRANSCRIPT, VIBES } from "@/lib/mock";
+import { useRouter } from "next/navigation";
+import type { CallView } from "@/lib/calls";
+import type { Receipt } from "@/lib/solana";
+import { VIBES } from "@/lib/mock";
 
-const LINE_MS = 2200;
+const POLL_MS = 1500;
+const MAX_ERRORS = 5;
 const BARS = 32;
 
+type Poll = CallView & { receipt: Receipt | null };
+
 export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
-  const [shown, setShown] = useState(1);
+  const router = useRouter();
+  const [call, setCall] = useState<Poll | null>(null);
   const [seconds, setSeconds] = useState(0);
   const [takenOver, setTakenOver] = useState(false);
   const bottom = useRef<HTMLDivElement>(null);
 
-  const done = shown >= TRANSCRIPT.length;
-  const onHold = shown <= 2;
+  const transcript = call?.transcript ?? [];
+  const done = call?.status === "done" || call?.status === "failed";
+  const onHold = transcript.filter((l) => l.speaker !== "system").length === 0;
   const vibeLabel = VIBES.find((v) => v.id === vibe)?.label ?? "Relentless";
 
-  // Mock: reveal one transcript line at a time. Pauses while you've taken over.
+  // Poll the call. If the API keeps failing, switch to the demo call so the demo never stalls.
   useEffect(() => {
-    if (done || takenOver) return;
-    const t = setTimeout(() => setShown((n) => n + 1), LINE_MS);
-    return () => clearTimeout(t);
-  }, [shown, done, takenOver]);
+    let errors = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    let stopped = false;
+
+    async function poll() {
+      try {
+        const res = await fetch(`/api/calls/${id}`, { signal: AbortSignal.timeout(30000), cache: "no-store" });
+        if (!res.ok) throw new Error(String(res.status));
+        const data: Poll = await res.json();
+        if (stopped) return;
+        errors = 0;
+        setCall(data);
+        if (data.status === "done") {
+          const tx = data.receipt ? `?tx=${data.receipt.signature}` : "";
+          timer = setTimeout(() => router.replace(`/win/${id}${tx}`), 1500);
+          return;
+        }
+        if (data.status === "failed") return;
+      } catch {
+        if (++errors >= MAX_ERRORS && !id.startsWith("demo-")) {
+          router.replace(`/call/demo-${Date.now()}?vibe=${vibe}`);
+          return;
+        }
+      }
+      if (!stopped) timer = setTimeout(poll, POLL_MS);
+    }
+
+    poll();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [id, vibe, router]);
 
   useEffect(() => {
     if (done) return;
@@ -32,9 +69,20 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [shown]);
+  }, [transcript.length]);
 
-  const status = done ? "Call ended" : takenOver ? "You're on the line" : onHold ? "On hold" : "Talking to Rogers";
+  const status =
+    call?.status === "failed"
+      ? "Call failed"
+      : done
+        ? "Call ended · stamping your receipt"
+        : call?.status === "processing"
+          ? "Wrapping up"
+          : takenOver
+            ? "You're on the line"
+            : onHold
+              ? "Dialing · on hold"
+              : "Talking to the rep";
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-6">
@@ -42,7 +90,9 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
         <Link href="/" className="flex min-h-11 items-center font-mono text-sm text-muted">
           ← Home
         </Link>
-        <span className="rounded-full border border-line px-3 py-1 font-mono text-xs">{vibeLabel} mode</span>
+        <span className="rounded-full border border-line px-3 py-1 font-mono text-xs">
+          {vibeLabel} mode{call?.demo ? " · demo" : ""}
+        </span>
       </header>
 
       <section className="mt-6">
@@ -55,7 +105,7 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
       </section>
 
       <section aria-live="polite" className="mt-4 flex flex-1 flex-col gap-3 pb-40">
-        {TRANSCRIPT.slice(0, shown).map((line, i) => (
+        {transcript.map((line, i) => (
           <Bubble key={i} {...line} />
         ))}
         <div ref={bottom} />
@@ -63,9 +113,16 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
 
       <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink to-transparent px-4 pt-8 pb-6">
         <div className="mx-auto flex w-full max-w-md gap-3">
-          {done ? (
+          {call?.status === "failed" ? (
             <Link
-              href={`/win/${id}`}
+              href="/"
+              className="flex min-h-16 flex-1 items-center justify-center rounded-full border-2 border-cream text-xl font-bold active:scale-[0.98]"
+            >
+              Try again
+            </Link>
+          ) : done ? (
+            <Link
+              href={`/win/${id}${call?.receipt ? `?tx=${call.receipt.signature}` : ""}`}
               className="flex min-h-16 flex-1 items-center justify-center rounded-full bg-lime text-xl font-extrabold text-ink active:scale-[0.98]"
             >
               See your win →
