@@ -1,0 +1,56 @@
+PROVIDER,PLAN_TYPE,PLAN_NAME,SPEED_MBPS,DATA_GB,MONTHLY_PRICE,PROMO_PRICE,PROMO_MONTHS,REGION,SOURCE_URL,CHECKED_AT
+Freedom,internet,5G Home Internet 200GB,100,,60,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
+Freedom,internet,5G Home Internet 600GB,100,,80,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
+Freedom,internet,5G Home Internet 1000GB,100,,100,,,BC,https://www.freedommobile.ca/en-CA/internet/5g-home-internet,2026-10-03
+Novus,internet,Internet 100,100,,50,,,BC,https://www.novusnow.ca/internet,2026-10-03
+Novus,internet,Internet 1000,1000,,55,,,BC,https://www.novusnow.ca/internet,2026-10-03
+Novus,internet,Internet 2500,2500,,65,,,BC,https://www.novusnow.ca/internet,2026-10-03
+Rogers,internet,Starter 100 Mbps,100,,110,60,24,BC,https://www.rogers.com/internet/plans,2026-10-03
+Rogers,internet,Popular 500 Mbps,500,,130,70,24,BC,https://www.rogers.com/internet/plans,2026-10-03
+Rogers,internet,Ultimate 1G,1000,,140,85,24,BC,https://www.rogers.com/internet/plans,2026-10-03
+Rogers,internet,Premier 2G,2000,,160,100,24,BC,https://www.rogers.com/internet/plans,2026-10-03
+Telus,internet,PureFibre Internet 500,500,,90,80,24,BC,https://www.telus.com/en/deals-and-bundles/internet-500,2026-10-03
+Telus,internet,PureFibre 1.5 Gigabit Internet,1500,,105,85,60,BC,https://www.telus.com/en/deals-and-bundles/purefibre-internet-1500,2026-10-03
+Telus,internet,PureFibre 3 Gig Internet,3000,,120,110,60,BC,https://www.telus.com/en/deals-and-bundles/purefibre-x-internet,2026-10-03
+Telus,internet,PureFibre 5 Gigabit Internet,5000,,165,135,24,BC,https://www.telus.com/en/internet/fibre,2026-10-03
+Bell,mobile,Select 60 GB,,60,75,50,,BC,https://www.bell.ca/Mobility/Cell_phone_plans,2026-10-03
+Bell,mobile,Select 100 GB with U.S. roaming,,100,80,55,,BC,https://www.bell.ca/Mobility/Cell_phone_plans,2026-10-03
+Bell,mobile,Ultra Unlimited with U.S./Mexico roaming,,999,95,70,,BC,https://www.bell.ca/Mobility/Cell_phone_plans,2026-10-03
+Bell,mobile,Ultra Unlimited with international roaming,,999,110,85,,BC,https://www.bell.ca/Mobility/Cell_phone_plans,2026-10-03
+Chatr,mobile,1GB,,1,21,,,BC,https://www.chatrwireless.com/plans,2026-10-03
+Chatr,mobile,5GB,,5,25,,,BC,https://www.chatrwireless.com/plans,2026-10-03
+Chatr,mobile,15GB,,15,30,,,BC,https://www.chatrwireless.com/plans,2026-10-03
+Chatr,mobile,30GB,,30,35,,,BC,https://www.chatrwireless.com/plans,2026-10-03
+Fido,mobile,5G 60GB,,60,50,,,BC,https://www.fido.ca/,2026-10-03
+Freedom,mobile,Total Freedom 35GB,,35,35,,,BC,https://shop.freedommobile.ca/en-CA/plans,2026-10-03
+Freedom,mobile,Total Freedom 125GB,,125,40,,,BC,https://shop.freedommobile.ca/en-CA/plans,2026-10-03
+Freedom,mobile,Total Freedom 175GB,,175,45,,,BC,https://shop.freedommobile.ca/en-CA/plans,2026-10-03
+Koodo,mobile,Prepaid 500 MB,,0.5,19,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,Prepaid 1 GB,,1,21,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,Prepaid 5 GB,,5,25,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,Prepaid 15 GB,,15,30,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,Prepaid 30 GB,,30,35,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,Prepaid 75 GB,,75,39,,,BC,https://www.koodomobile.com/en/prepaid-plans,2026-10-03
+Koodo,mobile,BYOP 10 GB + Perk,,10,40,,,BC,https://www.koodomobile.com/en,2026-10-03
+Lucky Mobile,mobile,500 MB,,0.5,19,,,BC,https://www.luckymobile.ca/plans,2026-10-03
+Lucky Mobile,mobile,1 GB,,1,21,,,BC,https://www.luckymobile.ca/plans,2026-10-03
+Lucky Mobile,mobile,5 GB,,5,25,,,BC,https://www.luckymobile.ca/plans,2026-10-03
+Lucky Mobile,mobile,15 GB,,15,30,,,BC,https://www.luckymobile.ca/plans,2026-10-03
+Lucky Mobile,mobile,30 GB,,30,35,,,BC,https://www.luckymobile.ca/plans,2026-10-03
+Public Mobile,mobile,Canada-wide 1GB,,1,22,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-wide 5GB,,5,24,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-wide 10GB,,10,28,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-wide 35GB,,35,30,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-wide 50GB,,50,35,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-US-Mexico 25GB,,25,35,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-US-Mexico 75GB,,75,40,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-US-Mexico 125GB,,125,45,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Public Mobile,mobile,Canada-US-Mexico 175GB,,175,50,,,BC,https://www.publicmobile.ca/en/plans,2026-10-03
+Rogers,mobile,5G+ Lite,,60,50,,,BC,https://www.rogers.com/mobility/plans,2026-10-03
+Rogers,mobile,5G+ Essentials,,100,55,,,BC,https://www.rogers.com/mobility/plans,2026-10-03
+Rogers,mobile,5G+ Popular,,999,70,,,BC,https://www.rogers.com/mobility/plans,2026-10-03
+Rogers,mobile,5G+ Ultimate,,999,85,,,BC,https://www.rogers.com/mobility/plans,2026-10-03
+Telus,mobile,5G+ Complete,,100,80,70,,BC,https://www.telus.com/en/mobility/plans,2026-10-03
+Telus,mobile,5G+ Complete - Unlimited,,999,95,85,,BC,https://www.telus.com/en/mobility/plans,2026-10-03
+Telus,mobile,5G+ Complete - Unlimited Explore,,999,110,100,,BC,https://www.telus.com/en/mobility/plans,2026-10-03
+Virgin Plus,mobile,BYOP 20GB,,20,40,,,BC,https://www.virginplus.ca/en/plans/postpaid.html,2026-10-03
