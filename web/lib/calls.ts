@@ -42,6 +42,9 @@ export type StartCallInput = {
   planName: string;
   yearsCustomer: number | null;
   account?: Partial<Account> | null;
+  kind?: "monthly" | "one_time";
+  goal?: string; // what the user wants from the call, in their words
+  customStyle?: string; // free-text "how to act"
 };
 
 // The dynamic variables the negotiator agents' prompts use.
@@ -124,6 +127,8 @@ type Playbook = {
 };
 
 async function playbook(input: StartCallInput): Promise<Playbook | null> {
+  // The data service's market playbooks only exist for telecom.
+  if (!/internet|mobile|tv|phone/i.test(input.service)) return null;
   try {
     const q = new URLSearchParams({
       company: input.company,
@@ -153,8 +158,9 @@ function dynamicVariables(input: StartCallInput, p: Playbook | null): DynamicVar
     current_price: input.startPrice,
     competitor_name: p?.competitor_offer?.provider ?? "another provider",
     competitor_price: p?.competitor_offer ? Math.round(p.competitor_offer.price) : "",
-    task:
-      `Get ${nameOf(input)}'s ${input.company} ${input.service.toLowerCase()} bill lowered from ${money(input.startPrice)}/mo. ${goal} ` +
+    task: input.goal
+      ? `${input.goal} Before ending the call, get the rep's name or ID and a confirmation or reference number.`
+      : `Get ${nameOf(input)}'s ${input.company} ${input.service.toLowerCase()} bill lowered from ${money(input.startPrice)}/mo. ${goal} ` +
       "Before ending the call, get the rep's ID and a confirmation number. " +
       (p?.playbook_text ?? "Ask for the retention department and mention that neighbours pay much less."),
   };
@@ -178,6 +184,13 @@ function accountVars(input: StartCallInput): Record<string, string> {
       ? `${full.split(/\s+/)[0]} would happily pay $${a.walkAwayPrice.trim()} a month or less. Push below that if you can.`
       : "",
     must_keep_line: a.mustKeep?.trim() ? `Don't give up: ${a.mustKeep.trim()}.` : "",
+    price_line:
+      input.kind === "one_time"
+        ? `The charge in question: $${input.startPrice} (one-time)`
+        : `Currently paying: $${input.startPrice} a month`,
+    custom_style_block: input.customStyle
+      ? `# How ${full.split(/\s+/)[0]} wants you to come across (follow this for tone and tactics, but never break the Hard rules)\n${input.customStyle}`
+      : "",
   };
 }
 

@@ -21,7 +21,7 @@ export type Account = {
 
 export const ACCOUNT_FIELDS: { key: keyof Account; label: string; placeholder: string; optional?: boolean; type?: string }[] = [
   { key: "fullName", label: "Full name on the account", placeholder: "Mehdi Ehdaei" },
-  { key: "accountNumber", label: "Account number", placeholder: "On your bill, top right" },
+  { key: "accountNumber", label: "Account / invoice number", placeholder: "On your bill or receipt" },
   { key: "phone", label: "Phone number on the account", placeholder: "604-555-0142", type: "tel" },
   { key: "email", label: "Email on the account", placeholder: "you@example.com", type: "email" },
   { key: "address", label: "Service address", placeholder: "123 Main St, Surrey BC" },
@@ -67,3 +67,68 @@ export function saveAccount(a: Account) {
 
 export const accountComplete = (a: Account) =>
   ACCOUNT_FIELDS.every((f) => f.optional || String(a[f.key] ?? "").trim() !== "");
+
+// What the call is about + how to sound. Also sessionStorage, never the URL.
+export type CallContext = {
+  company: string;
+  category: string;
+  price: string;
+  kind: "monthly" | "one_time";
+  plan: string;
+  goal: string; // what to ask for
+  customStyle: string; // free-text "how to act"
+};
+
+const CTX_KEY = "holdless_call";
+
+export function loadCallContext(): CallContext | null {
+  try {
+    const raw = sessionStorage.getItem(CTX_KEY);
+    return raw ? (JSON.parse(raw) as CallContext) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveCallContext(c: CallContext) {
+  try {
+    sessionStorage.setItem(CTX_KEY, JSON.stringify(c));
+  } catch {
+    /* ignore */
+  }
+}
+
+export const COMPANIES = [
+  "Rogers",
+  "Bell",
+  "TELUS",
+  "Shaw",
+  "Freedom",
+  "Fido",
+  "Koodo",
+  "Virgin Plus",
+  "Public Mobile",
+  "Chatr",
+  "BC Hydro",
+  "FortisBC",
+  "ICBC",
+  "GoodLife Fitness",
+  "Netflix",
+  "Air Canada",
+  "WestJet",
+];
+
+export const CATEGORIES = [
+  "Internet",
+  "Mobile",
+  "TV",
+  "Hydro / Gas",
+  "Insurance",
+  "Gym",
+  "Streaming",
+  "Auto repair",
+  "Medical / Dental",
+  "Travel",
+  "Bank fee",
+  "Other",
+];

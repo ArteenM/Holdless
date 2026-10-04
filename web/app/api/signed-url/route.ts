@@ -1,4 +1,4 @@
-import type { Account } from "@/lib/account";
+import type { Account, CallContext } from "@/lib/account";
 import { webSession } from "@/lib/calls";
 
 // POST /api/signed-url  { query: {vibe, company, service, province, price, plan, years}, account?: Account }
@@ -7,7 +7,11 @@ import { webSession } from "@/lib/calls";
 // Account details travel in the body, never in the URL.
 // 503 if ElevenLabs isn't configured or reachable; the call page then offers the demo call.
 
-async function start(q: URLSearchParams | Map<string, string>, account: Partial<Account> | null) {
+async function start(
+  q: URLSearchParams | Map<string, string>,
+  account: Partial<Account> | null,
+  context: Partial<CallContext> | null = null,
+) {
   const get = (k: string) => q.get(k) ?? "";
   const company = get("company") || "Rogers";
   const service = get("service") || "Internet";
@@ -23,6 +27,9 @@ async function start(q: URLSearchParams | Map<string, string>, account: Partial<
       planName: get("plan") || `${company} ${service}`,
       yearsCustomer: years > 0 ? years : null,
       account,
+      kind: context?.kind ?? (get("kind") === "one_time" ? "one_time" : "monthly"),
+      goal: context?.goal?.trim() || undefined,
+      customStyle: context?.customStyle?.trim() || undefined,
     });
     return Response.json(session, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {
@@ -37,6 +44,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as { query?: Record<string, string>; account?: Partial<Account> };
-  return start(new Map(Object.entries(body.query ?? {})), body.account ?? null);
+  const body = (await request.json().catch(() => ({}))) as {
+    query?: Record<string, string>;
+    account?: Partial<Account>;
+    context?: Partial<CallContext>;
+  };
+  return start(new Map(Object.entries(body.query ?? {})), body.account ?? null, body.context ?? null);
 }

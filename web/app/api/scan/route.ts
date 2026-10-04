@@ -1,3 +1,4 @@
+import { analyzeUpload } from "@/lib/analyze";
 import { SAMPLE_SCANS, type Scan } from "@/lib/mock";
 
 // POST /api/scan, multipart: `sample=<id>` or `file=<bill image/PDF>` → Scan
@@ -29,10 +30,32 @@ export async function POST(request: Request) {
   const file = form?.get("file");
   const fallbackId = typeof sample === "string" && sample in SAMPLE_SCANS ? sample : "rogers_internet";
 
+  // A real upload: read THIS document. Never answer with a sample bill.
+  if (file instanceof File) {
+    const scan = await analyzeUpload(file);
+    if (scan) return Response.json(scan);
+    try {
+      const body = new FormData();
+      body.set("file", file);
+      const res = await fetch(`${DATA_API}/bills/scan`, {
+        method: "POST",
+        body,
+        signal: AbortSignal.timeout(12000),
+        cache: "no-store",
+      });
+      if (res.ok) return Response.json(toScan(await res.json()));
+    } catch (e) {
+      console.error("[scan] data service couldn't read the upload:", e);
+    }
+    return Response.json(
+      { error: "Couldn't read this document automatically. Fill in the details below.", manual: true },
+      { status: 422 },
+    );
+  }
+
   try {
     const body = new FormData();
     if (typeof sample === "string") body.set("sample", sample);
-    else if (file instanceof File) body.set("file", file);
     else throw new Error("send `sample` or `file`");
 
     const res = await fetch(`${DATA_API}/bills/scan`, {

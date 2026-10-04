@@ -23,7 +23,14 @@ export type Scan = {
   // false when the data service says the bill isn't worth a call (fair price, no data)
   worthCalling?: boolean;
   // "fallback" when the data service couldn't be reached and these are the sample values
-  source?: "api" | "fallback";
+  source?: "api" | "fallback" | "ai" | "manual";
+  // Generic analysis of any bill/receipt (not just telecom)
+  category?: string; // "Internet", "Auto repair", "Gym", ...
+  kind?: "monthly" | "one_time";
+  savingsLow?: number;
+  savingsHigh?: number;
+  goal?: string; // what to ask for on the call
+  opportunities?: string[];
 };
 
 // Fallback when the data service is unreachable: a cached copy of what its

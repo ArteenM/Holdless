@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import type { Line } from "@/lib/calls";
 import { VIBES } from "@/lib/mock";
-import { loadAccount } from "@/lib/account";
+import { loadAccount, loadCallContext } from "@/lib/account";
 import { Bubble, Waveform, formatTime } from "./live-call";
 
 // A browser voice conversation with the vibe's ElevenLabs agent. You play the
@@ -64,7 +64,7 @@ function Conversation({ query }: { query: Record<string, string> }) {
         const res = await fetch("/api/signed-url", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query, account: loadAccount() }),
+          body: JSON.stringify({ query, account: loadAccount(), context: loadCallContext() }),
           cache: "no-store",
           signal: AbortSignal.timeout(15000),
         });
