@@ -10,6 +10,7 @@
     "solana:keygen": "node scripts/solana-keygen.mjs"
   },
   "dependencies": {
+    "@elevenlabs/react": "^1.16.0",
     "@solana/web3.js": "^1.99.0",
     "bs58": "^6.0.0",
     "next": "16.3.8",

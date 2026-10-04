@@ -127,6 +127,11 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
             >
               See your win →
             </Link>
+          ) : !id.startsWith("demo-") ? (
+            // A finished web conversation: ElevenLabs is still analysing it.
+            <p className="flex min-h-16 flex-1 items-center justify-center rounded-full border-2 border-line font-mono text-sm text-muted">
+              Reading the deal…
+            </p>
           ) : (
             <>
               <button
@@ -154,7 +159,7 @@ export default function LiveCall({ id, vibe }: { id: string; vibe: string }) {
   );
 }
 
-function Waveform({ active, calm }: { active: boolean; calm: boolean }) {
+export function Waveform({ active, calm }: { active: boolean; calm: boolean }) {
   return (
     <div className="mt-4 flex h-16 items-center gap-1" aria-hidden>
       {Array.from({ length: BARS }, (_, i) => (
@@ -173,7 +178,15 @@ function Waveform({ active, calm }: { active: boolean; calm: boolean }) {
   );
 }
 
-function Bubble({ speaker, text, promise }: { speaker: string; text: string; promise?: boolean }) {
+// ElevenLabs v3 voices write audio tags like "[cheerful]" or "[sighs]" into
+// the text. They shape the voice; don't show them. (Display only: the stored
+// transcript and its hash keep them.)
+const AUDIO_TAG = /\[[a-z][a-z' -]*\]\s*/gi;
+const stripAudioTags = (text: string) => text.replace(AUDIO_TAG, "").replace(/\s{2,}/g, " ").trim();
+
+export function Bubble({ speaker, text: raw, promise }: { speaker: string; text: string; promise?: boolean }) {
+  const text = stripAudioTags(raw);
+  if (!text) return null;
   if (speaker === "system") {
     return <p className="bubble-in py-1 text-center font-mono text-xs text-muted">{text}</p>;
   }
@@ -197,6 +210,6 @@ function Bubble({ speaker, text, promise }: { speaker: string; text: string; pro
   );
 }
 
-function formatTime(s: number) {
+export function formatTime(s: number) {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }

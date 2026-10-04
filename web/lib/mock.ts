@@ -14,6 +14,8 @@ export type Scan = {
   service: string;
   province: string;
   startPrice: number;
+  planName?: string;
+  yearsCustomer?: number;
   headline: string;
   overpayMo: number;
   detail: string;
@@ -32,6 +34,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
     service: "Internet",
     province: "BC",
     startPrice: 96,
+    planName: "Ignite Internet 1 Gbps",
+    yearsCustomer: 6,
     headline: "You're overpaying",
     overpayMo: 41,
     detail: "People in Surrey pay $55 for the same internet plan. You pay $96.",
@@ -42,6 +46,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
     service: "Mobile",
     province: "ON",
     startPrice: 95,
+    planName: "Essential 100 GB",
+    yearsCustomer: 4,
     headline: "You're overpaying",
     overpayMo: 30,
     detail: "People in Toronto pay $65 for the same phone plan. You pay $95.",
@@ -52,6 +58,8 @@ export const SAMPLE_SCANS: Record<string, Scan> = {
     service: "Mobile",
     province: "BC",
     startPrice: 85,
+    planName: "TELUS 100 GB",
+    yearsCustomer: 3,
     headline: "You're overpaying",
     overpayMo: 25,
     detail: "People in Burnaby pay $60 for the same phone plan. You pay $85.",

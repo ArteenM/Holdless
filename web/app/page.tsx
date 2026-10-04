@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ACCOUNT_FIELDS, DEMO_ACCOUNT, accountComplete, loadAccount, saveAccount, type Account } from "@/lib/account";
 import { SAMPLE_BILLS, SAMPLE_SCANS, VIBES, type Scan, type Vibe } from "@/lib/mock";
 
 export default function Home() {
@@ -12,6 +13,14 @@ export default function Home() {
   const [scan, setScan] = useState<Scan | null>(null);
   const [vibe, setVibe] = useState<Vibe>("relentless");
   const [dialing, setDialing] = useState(false);
+  const [account, setAccount] = useState<Account>(() => Object.fromEntries(Object.keys(DEMO_ACCOUNT).map((k) => [k, ""])) as Account);
+
+  useEffect(() => {
+    const saved = loadAccount();
+    if (saved) setAccount(saved);
+  }, []);
+
+  const setField = (key: keyof Account, value: string) => setAccount((a) => ({ ...a, [key]: value }));
 
   const scanSeq = useRef(0);
 
@@ -42,22 +51,21 @@ export default function Home() {
     setScanning(false);
   }
 
-  async function callForMe() {
-    if (!scan) return;
+  // Opens the live browser conversation; /call/new fetches the signed URL itself.
+  function callForMe() {
+    if (!scan || !accountComplete(account)) return;
+    saveAccount(account);
     setDialing(true);
-    let id = `demo-${Date.now()}`;
-    try {
-      const res = await fetch("/api/calls", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...scan, vibe }),
-        signal: AbortSignal.timeout(15000),
-      });
-      if (res.ok) id = (await res.json()).id;
-    } catch {
-      // fall back to the demo call
-    }
-    router.push(`/call/${id}?vibe=${vibe}`);
+    const q = new URLSearchParams({
+      vibe,
+      company: scan.company,
+      service: scan.service,
+      province: scan.province,
+      price: String(scan.startPrice),
+      plan: scan.planName ?? "",
+      years: account.yearsCustomer || String(scan.yearsCustomer ?? ""),
+    });
+    router.push(`/call/new?${q}`);
   }
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -66,7 +74,8 @@ export default function Home() {
     e.target.value = ""; // picking the same file again should rescan
   }
 
-  const canCall = scan !== null && scan.worthCalling !== false;
+  const detailsDone = accountComplete(account);
+  const canCall = scan !== null && scan.worthCalling !== false && detailsDone;
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 pt-6 pb-32">
@@ -164,10 +173,49 @@ export default function Home() {
               })}
             </div>
           </section>
+
+          {/* 4. Account details */}
+          <section className="bubble-in mt-8">
+            <div className="flex items-center justify-between">
+              <StepLabel n={3}>Account details</StepLabel>
+              <button
+                type="button"
+                onClick={() => setAccount({ ...DEMO_ACCOUNT, yearsCustomer: String(scan.yearsCustomer ?? DEMO_ACCOUNT.yearsCustomer) })}
+                className="min-h-11 rounded-full border border-line px-3 font-mono text-xs transition hover:border-lime active:scale-95"
+              >
+                Use demo details
+              </button>
+            </div>
+            <p className="mt-2 text-sm leading-snug text-muted">
+              Reps always ask to confirm the account, so we have everything ready. We never ask for passwords, PINs or
+              security answers. If they insist, you get patched in to verify.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              {ACCOUNT_FIELDS.map((f) => {
+                const wide = f.key === "fullName" || f.key === "address" || f.key === "email" || f.key === "mustKeep";
+                return (
+                  <label key={f.key} className={`flex flex-col gap-1 ${wide ? "col-span-2" : ""}`}>
+                    <span className="font-mono text-[11px] uppercase tracking-widest text-muted">
+                      {f.label}
+                      {f.optional && <span className="normal-case tracking-normal"> · optional</span>}
+                    </span>
+                    <input
+                      type={f.type ?? "text"}
+                      inputMode={f.type === "number" ? "numeric" : undefined}
+                      value={account[f.key]}
+                      placeholder={f.placeholder}
+                      onChange={(e) => setField(f.key, e.target.value)}
+                      className="min-h-12 rounded-2xl border border-line bg-card px-4 text-base outline-none transition placeholder:text-muted/60 focus:border-lime"
+                    />
+                  </label>
+                );
+              })}
+            </div>
+          </section>
         </>
       )}
 
-      {/* 4. Call */}
+      {/* 5. Call */}
       <div className="fixed inset-x-0 bottom-0 bg-gradient-to-t from-ink via-ink to-transparent px-4 pt-8 pb-6">
         <button
           type="button"
@@ -175,7 +223,13 @@ export default function Home() {
           onClick={callForMe}
           className="mx-auto block min-h-16 w-full max-w-md rounded-full bg-lime text-xl font-extrabold text-ink transition active:scale-[0.98] disabled:opacity-30"
         >
-          {dialing ? "Dialing…" : scan && !canCall ? "Nothing to win here" : "Call for me"}
+          {dialing
+            ? "Dialing…"
+            : scan && scan.worthCalling === false
+              ? "Nothing to win here"
+              : scan && !detailsDone
+                ? "Add account details"
+                : "Call for me"}
         </button>
       </div>
     </main>

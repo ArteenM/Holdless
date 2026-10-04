@@ -8,7 +8,13 @@ const DATA_API = process.env.DATA_API_URL || "http://localhost:8100";
 const SCAN_TIMEOUT_MS = 25000; // a real photo goes through Claude vision
 
 type ScanResult = {
-  bill: { provider: string; service: string; province?: string | null };
+  bill: {
+    provider: string;
+    service: string;
+    province?: string | null;
+    plan_name?: string | null;
+    account_tenure_years?: number | null;
+  };
   you_pay: number;
   overpay_mo: number;
   headline: string;
@@ -51,6 +57,8 @@ function toScan(r: ScanResult): Scan {
     service: service.charAt(0).toUpperCase() + service.slice(1),
     province: r.bill.province ?? "",
     startPrice: r.you_pay,
+    planName: r.bill.plan_name ?? undefined,
+    yearsCustomer: r.bill.account_tenure_years ?? undefined,
     // The API's headline already includes the amount ("You're overpaying $41/mo");
     // the card shows the amount large on its own line.
     headline: overpayMo > 0 ? "You're overpaying" : r.headline,

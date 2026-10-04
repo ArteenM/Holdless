@@ -1,10 +1,12 @@
 import { createHash } from "node:crypto";
 import { TRANSCRIPT } from "@/lib/mock";
+import type { Account } from "@/lib/account";
+import { FIRST_MESSAGE, competitorLine, fillTemplate, systemPrompt } from "@/lib/prompts";
 import { stampReceipt, type Receipt } from "@/lib/solana";
 
-// Server-only. Starts ElevenLabs outbound calls and turns a conversation into
-// something the app can show. Every step falls back to a demo call so the
-// golden path never stops.
+// Server-only. Prepares ElevenLabs browser (web) conversations and turns a
+// finished conversation into something the app can show. Every step falls back
+// to a demo call so the golden path never stops.
 
 const ELEVEN = "https://api.elevenlabs.io/v1/convai";
 const DATA_API = process.env.DATA_API_URL || "http://localhost:8100";
@@ -32,12 +34,41 @@ export type CallView = {
 };
 
 export type StartCallInput = {
+  vibe: string;
   company: string;
-  service: string;
+  service: string; // "Internet" | "Mobile"
   province: string;
   startPrice: number;
-  vibe: string;
+  planName: string;
+  yearsCustomer: number | null;
+  account?: Partial<Account> | null;
 };
+
+// The dynamic variables the negotiator agents' prompts use.
+export type DynamicVariables = {
+  user_name: string;
+  company: string;
+  plan_type: string;
+  plan_name: string;
+  years_customer: number | string;
+  current_price: number;
+  competitor_name: string;
+  competitor_price: number | string;
+  task: string;
+};
+
+// overrides replace the agent's dashboard prompt and first message, so every
+// vibe's agent behaves as the Holdless negotiator. The agent must allow these
+// overrides (ElevenLabs agent → Security → Overrides).
+export type WebSession = {
+  signedUrl: string;
+  dynamicVariables: DynamicVariables;
+  overrides: { agent: { prompt: { prompt: string }; firstMessage: string } };
+};
+
+// Whose bill it is when no account details were sent (demo fallback).
+const DEFAULT_NAME = "Mehdi Ehdaei";
+const nameOf = (input: StartCallInput) => input.account?.fullName?.trim() || DEFAULT_NAME;
 
 // ---------------------------------------------------------------- helpers
 
@@ -85,7 +116,14 @@ function buildResult(
 
 // ---------------------------------------------------------------- start
 
-async function playbook(input: StartCallInput): Promise<Record<string, string | number>> {
+type Playbook = {
+  playbook_text: string;
+  target_price?: number | null;
+  accept_at_or_below?: number | null;
+  competitor_offer?: { provider: string; price: number } | null;
+};
+
+async function playbook(input: StartCallInput): Promise<Playbook | null> {
   try {
     const q = new URLSearchParams({
       company: input.company,
@@ -93,69 +131,87 @@ async function playbook(input: StartCallInput): Promise<Record<string, string | 
       province: input.province,
       start_price: String(input.startPrice),
     });
-    const p = await fetchJson<{
-      playbook_text: string;
-      target_price?: number;
-      accept_at_or_below?: number;
-      competitor_offer?: string | null;
-    }>(`${DATA_API}/playbook?${q}`, {}, 4000);
-    return {
-      playbook: p.playbook_text,
-      target_price: p.target_price ?? "",
-      accept_at_or_below: p.accept_at_or_below ?? "",
-      competitor_offer: p.competitor_offer ?? "",
-    };
+    return await fetchJson<Playbook>(`${DATA_API}/playbook?${q}`, {}, 4000);
   } catch (err) {
     console.warn("[calls] playbook unavailable, using fallback:", err);
-    return {
-      playbook: `Ask for retention. Neighbours pay much less than $${input.startPrice}. Accept a discount of at least $20/mo for 12 months.`,
-      target_price: "",
-      accept_at_or_below: "",
-      competitor_offer: "",
-    };
+    return null;
   }
 }
 
-/** Returns the call id: the ElevenLabs conversation_id, or `demo-<ms>` if the real call can't start. */
-export async function startCall(input: StartCallInput): Promise<{ id: string; demo: boolean }> {
-  const { ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID, ELEVENLABS_PHONE_NUMBER_ID, CALL_TO_NUMBER } = process.env;
-  if (!ELEVENLABS_API_KEY || !ELEVENLABS_AGENT_ID || !ELEVENLABS_PHONE_NUMBER_ID || !CALL_TO_NUMBER) {
-    console.warn("[calls] ElevenLabs env not set, starting a demo call");
-    return demoCall();
-  }
+function dynamicVariables(input: StartCallInput, p: Playbook | null): DynamicVariables {
+  const money = (n: number) => `$${Math.round(n)}`;
+  const goal =
+    p?.target_price && p?.accept_at_or_below
+      ? `Aim for ${money(p.target_price)}/mo and accept ${money(p.accept_at_or_below)}/mo or less.`
+      : "Accept a discount of at least $20/mo for 12 months.";
+  return {
+    user_name: nameOf(input),
+    company: input.company,
+    plan_type: input.service.toLowerCase(),
+    plan_name: input.planName,
+    years_customer: input.yearsCustomer ?? "several",
+    current_price: input.startPrice,
+    competitor_name: p?.competitor_offer?.provider ?? "another provider",
+    competitor_price: p?.competitor_offer ? Math.round(p.competitor_offer.price) : "",
+    task:
+      `Get ${nameOf(input)}'s ${input.company} ${input.service.toLowerCase()} bill lowered from ${money(input.startPrice)}/mo. ${goal} ` +
+      "Before ending the call, get the rep's ID and a confirmation number. " +
+      (p?.playbook_text ?? "Ask for the retention department and mention that neighbours pay much less."),
+  };
+}
 
-  try {
-    const dynamic_variables = {
-      company: input.company,
-      service: input.service,
-      province: input.province,
-      start_price: input.startPrice,
-      vibe: input.vibe,
-      ...(await playbook(input)),
-    };
-    const res = await fetchJson<{ success: boolean; message: string; conversation_id: string | null }>(
-      `${ELEVEN}/twilio/outbound-call`,
-      {
-        method: "POST",
-        headers: elevenHeaders(),
-        body: JSON.stringify({
-          agent_id: ELEVENLABS_AGENT_ID,
-          agent_phone_number_id: ELEVENLABS_PHONE_NUMBER_ID,
-          to_number: CALL_TO_NUMBER,
-          conversation_initiation_client_data: { dynamic_variables },
-        }),
+// Prompt-only variables from the account details form. "not on file" keeps the
+// agent from inventing anything that wasn't provided.
+function accountVars(input: StartCallInput): Record<string, string> {
+  const a = input.account ?? {};
+  const v = (x?: string) => (x && x.trim() ? x.trim() : "not on file");
+  const full = nameOf(input);
+  return {
+    first_name: full.split(/\s+/)[0],
+    account_number: v(a.accountNumber),
+    phone: v(a.phone),
+    email: v(a.email),
+    address: v(a.address),
+    postal_code: v(a.postalCode),
+    contract_line: a.contractEnd?.trim() ? `Contract or promo ends: ${a.contractEnd.trim()}` : "No contract end date on file",
+    walk_away_line: a.walkAwayPrice?.trim()
+      ? `${full.split(/\s+/)[0]} would happily pay $${a.walkAwayPrice.trim()} a month or less. Push below that if you can.`
+      : "",
+    must_keep_line: a.mustKeep?.trim() ? `Don't give up: ${a.mustKeep.trim()}.` : "",
+  };
+}
+
+/** A signed URL for the vibe's agent plus the variables to start it with. Throws if ElevenLabs isn't set up. */
+export async function webSession(input: StartCallInput): Promise<WebSession> {
+  const agentId = process.env[`EL_AGENT_${input.vibe.toUpperCase()}`];
+  if (!process.env.ELEVENLABS_API_KEY) throw new Error("ELEVENLABS_API_KEY is not set");
+  if (!agentId) throw new Error(`EL_AGENT_${input.vibe.toUpperCase()} is not set`);
+
+  const [signed, p] = await Promise.all([
+    fetchJson<{ signed_url: string }>(
+      `${ELEVEN}/conversation/get-signed-url?agent_id=${encodeURIComponent(agentId)}`,
+      { headers: elevenHeaders() },
+    ),
+    playbook(input),
+  ]);
+  const vars = dynamicVariables(input, p);
+  return {
+    signedUrl: signed.signed_url,
+    dynamicVariables: vars,
+    overrides: {
+      agent: {
+        prompt: {
+          prompt: fillTemplate(systemPrompt(input.vibe), {
+            ...vars,
+            ...accountVars(input),
+            competitor_line: competitorLine(vars.competitor_name, vars.competitor_price),
+          }),
+        },
+        firstMessage: fillTemplate(FIRST_MESSAGE, { ...vars, ...accountVars(input) }),
       },
-      10000,
-    );
-    if (!res.success || !res.conversation_id) throw new Error(res.message);
-    return { id: res.conversation_id, demo: false };
-  } catch (err) {
-    console.error("[calls] outbound call failed, starting a demo call:", err);
-    return demoCall();
-  }
+    },
+  };
 }
-
-const demoCall = () => ({ id: `demo-${Date.now()}`, demo: true });
 
 // ---------------------------------------------------------------- poll
 
@@ -195,7 +251,7 @@ async function getElevenCall(id: string): Promise<CallView> {
     headers: elevenHeaders(),
   });
 
-  // In an outbound call the "user" is the customer service rep.
+  // The "user" side of the conversation plays the customer service rep.
   const transcript: Line[] = c.transcript
     .filter((t) => t.message)
     .map((t) => ({ speaker: t.role === "agent" ? "agent" : "rep", text: t.message as string }));
