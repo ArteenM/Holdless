@@ -39,8 +39,8 @@ Use `/bills/scan` with `sample=rogers_internet` as the demo fallback. It should 
 2. Parse it with Arteen's API (`POST /bills/scan`)
 3. Show the overpay (Arteen's API / Snowflake)
 4. Pick a vibe: Polite / Relentless / Lawyer / Grandma
-5. `POST /api/calls` starts an ElevenLabs Twilio outbound call with `dynamic_variables` (include the playbook from `GET /playbook`)
-6. `/call/[id]` polls `GET /api/calls/[id]`
+5. `/call/new` gets `GET /api/signed-url?vibe=…` (signed URL for that vibe's agent + `dynamic_variables` built with the playbook from `GET /playbook`) and starts a browser conversation with `@elevenlabs/react` `useConversation`; the live transcript comes from `onMessage`
+6. When it ends, `/call/<conversationId>` polls `GET /api/calls/[id]` until ElevenLabs' analysis is done
 7. When the call is done: read `data_collection_results`, sha256 the transcript + promises, and stamp a Solana devnet Memo tx
 8. `/win/[id]` shows the Explorer link and a share button
 
@@ -49,18 +49,16 @@ Use `/bills/scan` with `sample=rogers_internet` as the demo fallback. It should 
 | Var | Used for |
 |---|---|
 | `ELEVENLABS_API_KEY` | ElevenLabs API (`xi-api-key`) |
-| `ELEVENLABS_AGENT_ID` | The negotiator agent |
-| `ELEVENLABS_PHONE_NUMBER_ID` | Twilio number imported into ElevenLabs |
-| `CALL_TO_NUMBER` | Number the agent dials (E.164) |
+| `EL_AGENT_POLITE` / `_RELENTLESS` / `_LAWYER` / `_GRANDMA` | One negotiator agent per vibe |
 | `DATA_API_URL` | Arteen's data service, default `http://localhost:8100` |
 | `SOLANA_AUTHORITY_SECRET` | base58 keypair that signs receipts (`npm run solana:keygen`) |
 | `SOLANA_RPC_URL` | Optional, defaults to public devnet |
 
-If any ElevenLabs var is missing or the call fails, `POST /api/calls` returns a `demo-<ms>` id that replays the mock transcript.
+No Twilio: calls run in the browser (web mode) and the person at the laptop plays the rep. If the signed URL or the mic fails, `/call/new` offers the demo call (`/call/demo-<ms>`), which replays the mock transcript.
 
 ## ElevenLabs agent setup
 
-- Dynamic variables sent on every call: `{{company}}`, `{{service}}`, `{{province}}`, `{{start_price}}`, `{{vibe}}`, `{{playbook}}`, `{{target_price}}`, `{{accept_at_or_below}}`, `{{competitor_offer}}`
+- Dynamic variables sent on every call: `{{user_name}}`, `{{company}}`, `{{plan_type}}`, `{{plan_name}}`, `{{years_customer}}`, `{{current_price}}`, `{{competitor_name}}`, `{{competitor_price}}`, `{{task}}` (the task includes the playbook)
 - Data collection fields (Analysis tab), read by `GET /api/calls/[id]`: `discount_mo` (number, $ off per month), `months` (number), `rep_id` (string), `confirmation_number` (string)
 
 ## Rules
